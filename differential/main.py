@@ -134,22 +134,26 @@ def solve_fdm(p_expr, q_expr, f_expr, x0, xk, y0, yk, n, method="thomas"):
     return xs, ys
 
 
-def build_canonical_poly(xs, ys, degree=None):
+def build_approx(xs, ys, degree=None):
     """
-    Строит канонический полином по точки (xs, ys) методом МНК:
-    p = (X^T X)^(-1) X^T Y.
+    Строит аппроксимационный полином МНК.
+    Работает даже при одинаковых x (дубликаты удаляются).
     """
     xs = np.asarray(xs, dtype=float)
     ys = np.asarray(ys, dtype=float)
 
+    # Убираем повторяющиеся x
+    xs, unique_indices = np.unique(xs, return_index=True)
+    ys = ys[unique_indices]
+
     if degree is None:
         degree = min(5, len(xs) - 1)
 
-    X = np.vander(xs, degree + 1, increasing=True)  # [1, x, x^2, ...]
+    X = np.vander(xs, degree + 1, increasing=True)
     XtX = X.T @ X
     XtY = X.T @ ys
     coeffs = np.linalg.solve(XtX, XtY)
-    return coeffs   # a0..ak
+    return coeffs
 
 
 def poly_to_string(coeffs, precision=4):
@@ -420,7 +424,12 @@ class MainWindow(QMainWindow):
             return
 
         # полином
-        coeffs = build_canonical_poly(xs, ys)
+        try:
+            coeffs = build_approx(xs, ys)
+        except Exception as e:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(self, "Ошибка вычислений", str(e))
+            return
         poly_str = poly_to_string(coeffs, precision=4)
         self.poly_edit.setText(poly_str)
 

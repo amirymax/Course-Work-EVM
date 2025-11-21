@@ -255,11 +255,14 @@ class IntegralsWindow(QWidget):
             )
             return
 
-        left_val = left_rect(f, a, b, n)
-        right_val = right_rect(f, a, b, n)
-        trap_val = trapezoid(f, a, b, n)
-        simp_val = simpson(f, a, b, n)
-
+        try:
+            left_val = left_rect(f, a, b, n)
+            right_val = right_rect(f, a, b, n)
+            trap_val = trapezoid(f, a, b, n)
+            simp_val = simpson(f, a, b, n)
+        except ValueError as e:
+            QMessageBox.warning(self, "Ошибка", f"ОДЗ {e}")
+            return
         self.left_edit.setText(f"{left_val:.6f}")
         self.right_edit.setText(f"{right_val:.6f}")
         self.trap_edit.setText(f"{trap_val:.6f}")
@@ -280,10 +283,10 @@ class IntegralsWindow(QWidget):
             return
 
         self.nmin_edit.setText(str(n_min))
-        self.left_edit.setText(f"{value:.6f}")
-        self.right_edit.setText(f"{value:.6f}")
-        self.trap_edit.setText(f"{value:.6f}")
-        self.simp_edit.setText(f"{value:.6f}")
+        self.left_edit.setText(f"{value[0]}")
+        self.right_edit.setText(f"{value[1]}")
+        self.trap_edit.setText(f"{value[2]}")
+        self.simp_edit.setText(f"{value[3]}")
 
     def on_runge(self):
         try:

@@ -7,30 +7,31 @@ from trapezoid import trapezoid
 from simpson import simpson
 
 
-def rounded3(x):
-    """Округляет число до 3 знаков после запятой (как в VBA)."""
-    return round(x, 3)
+def floor3(x):
+    return int(x * 1000) / 1000
+
 
 
 def find_min_n(f, a, b):
-    """
-    Находит минимальное чётное n, при котором результаты
-    всех методов совпадают до 3 знаков.
-    """
-
-    n = 2  # симпсон требует n кратного 2
-
+    n = 2
     while True:
-        # вычисление значений всеми методами
-        L = rounded3(left_rect(f, a, b, n))
-        R = rounded3(right_rect(f, a, b, n))
-        T = rounded3(trapezoid(f, a, b, n))
-        S = rounded3(simpson(f, a, b, n))
 
-        # проверка совпадения (как в VBA)
-        if L == R == T == S:
-            return n, L  # минимальное n и само значение
+        # НЕ ОКРУГЛЁННЫЕ значения
+        L = left_rect(f, a, b, n)
+        R = right_rect(f, a, b, n)
+        T = trapezoid(f, a, b, n)
+        S = simpson(f, a, b, n)
+
+        # ОКРУГЛЁННЫЕ для проверки
+        L3 = floor3(L)
+        R3 = floor3(R)
+        T3 = floor3(T)
+        S3 = floor3(S)
+
+        # Проверка совпадения до 3 знаков
+        if L3 == R3 == T3 == S3:
+            return n, (L, R, T, S)
 
         n += 2
         if n > 100000:
-            raise RuntimeError("Не удалось найти n — слишком большой перебор")
+            raise RuntimeError("Слишком большой n, методы не сходятся")
